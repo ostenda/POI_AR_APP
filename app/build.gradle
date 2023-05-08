@@ -35,6 +35,11 @@ android {
 dependencies {
     apply plugin: 'kotlin-kapt'
 
+
+    implementation 'com.github.kittinunf.fuel:fuel:2.3.1'
+    implementation 'com.github.kittinunf.fuel:fuel-android:2.3.1'
+    implementation 'com.github.kittinunf.fuel:fuel-json:2.3.1'
+    implementation 'com.github.kittinunf.fuel:fuel-gson:2.3.1'
     implementation 'androidx.preference:preference-ktx:1.1.1'
     implementation 'androidx.room:room-common:2.3.0'
     implementation 'androidx.room:room-runtime:2.2.3'

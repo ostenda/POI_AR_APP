@@ -3,6 +3,7 @@
     xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:id="@+id/choosemap" android:title="@string/test"/>
     <item android:id="@+id/showsavedSQL" android:title="@string/save_poi"/>
+    <item android:id="@+id/showdataweb" android:title="@string/showdataweb"/>
     <item android:id="@+id/create_poi" android:title="@string/create_poi"/>
     <item android:id="@+id/preferences" android:title="@string/preferences"/>
 </menu>

@@ -30,6 +30,11 @@ import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.ItemizedIconOverlay
 import org.osmdroid.views.overlay.OverlayItem
+import com.github.kittinunf.fuel.httpGet
+// import com.github.kittinunf.fuel.json.responseJson // for JSON - uncomment when needed
+// import com.github.kittinunf.fuel.gson.responseObject // for GSON - uncomment when needed
+import com.github.kittinunf.fuel.json.responseJson
+import com.github.kittinunf.result.Result
 
 class MainActivity : AppCompatActivity(), LocationListener {
 
@@ -37,6 +42,8 @@ class MainActivity : AppCompatActivity(), LocationListener {
 
     var showPOI = false
     var autoupload = false;
+    var shopWebPoi = false;
+
 
     var currentLatitude = 0.0;
     var currentLongitude = 0.0;
@@ -110,6 +117,9 @@ class MainActivity : AppCompatActivity(), LocationListener {
             R.id.showsavedSQL -> {
                 loadDataFromDatabase()
             }
+            R.id.showdataweb -> {
+                loadWebData()
+            }
 
         }
         return false
@@ -137,6 +147,7 @@ class MainActivity : AppCompatActivity(), LocationListener {
                     if(new_type != null){
                         if(new_description !=null){
                             insertDataToDatabase(new_poi_name,new_type,new_description)
+
                             if(autoupload) {
                                 insertWebData(new_poi_name,new_type,new_description)
                             }
@@ -152,8 +163,63 @@ class MainActivity : AppCompatActivity(), LocationListener {
         // The lambda function ends here
     }
 
-    fun insertWebData(new_poi_name: String, new_type: String, new_description: String){
+    fun insertWebData(new_poi_name: String, new_type: String, new_description: String) {
 
+    }
+
+    private fun loadWebData(){
+        shopWebPoi = true;
+
+        Toast.makeText(this@MainActivity, "Bringing data from web server", Toast.LENGTH_SHORT).show()
+
+        var url = "http://10.0.2.2:3000/poi/all"
+        url.httpGet().responseJson { request, response, result ->
+            when(result) {
+                is Result.Success -> {
+                    val jsonArray = result.get().array()
+                    var str = ""
+
+                    val markerGestureListener = object:ItemizedIconOverlay.OnItemGestureListener<OverlayItem>
+                    {
+                        override fun onItemLongPress(i: Int, item:OverlayItem ) : Boolean
+                        {
+                            Handler(Looper.getMainLooper()).post {
+
+                                android.app.AlertDialog.Builder(this@MainActivity)
+                                    .setPositiveButton("OK", null) // add an OK button with an optional event handler
+                                    .setMessage(item.snippet) // set the message
+                                    .show() // show the dialog
+                            }
+                            return true
+                        }
+
+                        override fun onItemSingleTapUp(i: Int, item:OverlayItem): Boolean
+                        {
+                            Toast.makeText(this@MainActivity, item.snippet, Toast.LENGTH_SHORT).show()
+                            return true
+                        }
+                    }
+
+                    val items = ItemizedIconOverlay(this@MainActivity, arrayListOf<OverlayItem>(), markerGestureListener)
+
+                    for(i in 0 until jsonArray.length()) {
+                        val curObj = jsonArray.getJSONObject(i)
+                        str += "Point of Intrest: ${curObj.getString("name")} Type: ${curObj.getString("type")}  Description: ${curObj.getString("description")}}\n"
+
+                        val new_item = OverlayItem(curObj.getString("name"), "Point of Intrest: ${curObj.getString("name")} Type: ${curObj.getString("type")}  Description: ${curObj.getString("description")}\n", GeoPoint(curObj.getDouble("lat"), curObj.getDouble("lon")))
+                        items.addItem(new_item)
+                        map1.overlays.add(items)
+
+                    }
+                }
+                is Result.Failure -> {
+                    android.app.AlertDialog.Builder(this@MainActivity)
+                        .setPositiveButton("OK", null) // add an OK button with an optional event handler
+                        .setMessage("ERROR ${result.error.message}") // set the message
+                        .show() // show the dialog
+                }
+            }
+        }
     }
 
     private fun insertDataToDatabase(name: String, type: String, description: String) {

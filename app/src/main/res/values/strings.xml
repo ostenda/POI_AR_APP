@@ -2,6 +2,7 @@
     <string name="app_name">Michal Ostenda</string>
     <string name="test"> test</string>
     <string name="saveSQL"> Save all POI</string>
+    <string name="showdataweb">Load data from web server</string>
 
     <string name="name">Name</string>
     <string name="type">Type</string>
