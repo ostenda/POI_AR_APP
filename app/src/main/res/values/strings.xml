@@ -1,4 +1,10 @@
 <resources>
     <string name="app_name">Michal Ostenda</string>
     <string name="test"> test</string>
+    <string name="saveSQL"> Save all POI</string>
+
+    <string name="name">Name</string>
+    <string name="type">Type</string>
+    <string name="description">Description</string>
+    <string name="save_poi">Save Point of Interest!</string>
 </resources>

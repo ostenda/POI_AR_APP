@@ -10,6 +10,10 @@ import android.location.LocationManager
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.preference.PreferenceManager
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
+import android.content.Intent
 import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
@@ -59,6 +63,25 @@ class MainActivity : AppCompatActivity(), LocationListener {
         items.addItem(fernhurst)
         items.addItem(blackdown)
         map1.overlays.add(items)
+    }
+
+
+    //Menu handler
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.menu,menu)
+
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when(item.itemId) {
+            R.id.choosemap -> {
+                val intent = Intent(this,MapChooseActivity::class.java)
+                startActivity(intent)
+                return true
+            }
+        }
+        return false
     }
 
     fun POI_click() {
