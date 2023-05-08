@@ -8,4 +8,5 @@
     <string name="description">Description</string>
     <string name="save_poi">Show saved Point of Interest!</string>
     <string name="create_poi"> Create Point of Interest!</string>
+    <string name="preferences"> Preferences</string>
 </resources>

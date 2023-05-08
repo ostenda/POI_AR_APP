@@ -1,5 +1,6 @@
 package com.example.com527_michalostenda
 
+
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
@@ -35,6 +36,7 @@ class MainActivity : AppCompatActivity(), LocationListener {
     lateinit var map1: MapView
 
     var showPOI = false
+    var autoupload = false;
 
     var currentLatitude = 0.0;
     var currentLongitude = 0.0;
@@ -88,12 +90,18 @@ class MainActivity : AppCompatActivity(), LocationListener {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when(item.itemId) {
-            R.id.choosemap -> {
-                val intent = Intent(this,MapChooseActivity::class.java)
+            R.id.preferences -> {
+                val intent = Intent(this,PreferencesActivity::class.java)
                 startActivity(intent)
                 return true
             }
 
+         /*   R.id.choosemap -> {
+                val intent = Intent(this,MapChooseActivity::class.java)
+                startActivity(intent)
+                return true
+            }
+*/
             R.id.create_poi -> {
                 val intent = Intent(this,AddNewPOIActivity::class.java)
                 PoiLauncher.launch(intent)
@@ -102,6 +110,7 @@ class MainActivity : AppCompatActivity(), LocationListener {
             R.id.showsavedSQL -> {
                 loadDataFromDatabase()
             }
+
         }
         return false
     }
@@ -128,6 +137,9 @@ class MainActivity : AppCompatActivity(), LocationListener {
                     if(new_type != null){
                         if(new_description !=null){
                             insertDataToDatabase(new_poi_name,new_type,new_description)
+                            if(autoupload) {
+                                insertWebData(new_poi_name,new_type,new_description)
+                            }
                         } else{
                             Toast.makeText(this@MainActivity,"Point of interest added to the map as marker", Toast.LENGTH_SHORT).show()
                         }
@@ -138,6 +150,10 @@ class MainActivity : AppCompatActivity(), LocationListener {
             }
         }
         // The lambda function ends here
+    }
+
+    fun insertWebData(new_poi_name: String, new_type: String, new_description: String){
+
     }
 
     private fun insertDataToDatabase(name: String, type: String, description: String) {
@@ -258,6 +274,14 @@ class MainActivity : AppCompatActivity(), LocationListener {
 
 
         map1.controller.setCenter(GeoPoint(loc.latitude, loc.longitude))
+    }
+
+
+    override fun onResume() {
+        super.onResume()
+        val prefs = androidx.preference.PreferenceManager.getDefaultSharedPreferences(this@MainActivity)
+        autoupload = prefs.getBoolean("autoupload", false) ?: false
+
     }
 
     override fun onProviderEnabled(provider: String) {
