@@ -2,5 +2,6 @@
 <menu
     xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:id="@+id/choosemap" android:title="@string/test"/>
-    <item android:id="@+id/saveSQL" android:title="@string/saveSQL"/>
+    <item android:id="@+id/showsavedSQL" android:title="@string/save_poi"/>
+    <item android:id="@+id/create_poi" android:title="@string/create_poi"/>
 </menu>

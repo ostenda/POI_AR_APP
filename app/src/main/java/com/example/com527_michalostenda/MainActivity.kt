@@ -11,15 +11,19 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.preference.PreferenceManager
 import android.view.Menu
-import android.view.MenuInflater
 import android.view.MenuItem
 import android.content.Intent
-import android.widget.Button
-import android.widget.EditText
+import android.os.Handler
+import android.os.Looper
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.osmdroid.config.Configuration
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
@@ -29,6 +33,12 @@ import org.osmdroid.views.overlay.OverlayItem
 class MainActivity : AppCompatActivity(), LocationListener {
 
     lateinit var map1: MapView
+
+    var showPOI = false
+
+    var currentLatitude = 0.0;
+    var currentLongitude = 0.0;
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -66,6 +76,9 @@ class MainActivity : AppCompatActivity(), LocationListener {
     }
 
 
+
+
+
     //Menu handler
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.menu,menu)
@@ -80,15 +93,113 @@ class MainActivity : AppCompatActivity(), LocationListener {
                 startActivity(intent)
                 return true
             }
+
+            R.id.create_poi -> {
+                val intent = Intent(this,AddNewPOIActivity::class.java)
+                PoiLauncher.launch(intent)
+                return true
+            }
+            R.id.showsavedSQL -> {
+                loadDataFromDatabase()
+            }
         }
         return false
     }
 
-    fun POI_click() {
 
+    val PoiLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+        // The lambda function starts here
+        // Check that we get an OK (success) result from the second activity
+        if (it.resultCode == RESULT_OK) {
+            it.data?.apply {
+                val new_poi_name = this.getStringExtra("com.app.new-poi_name")
+                val new_type = this.getStringExtra("com.app.new-poi_type")
+                val new_description = this.getStringExtra("com.app.new-poi_description")
+
+
+
+                val user = OverlayItem(new_poi_name, "You are currently here", GeoPoint(currentLatitude, currentLongitude))
+                val items = ItemizedIconOverlay(this@MainActivity, arrayListOf<OverlayItem>(), null)
+                items.addItem(user)
+                map1.overlays.add(items)
+
+
+                if (new_poi_name != null) {
+                    if(new_type != null){
+                        if(new_description !=null){
+                            insertDataToDatabase(new_poi_name,new_type,new_description)
+                        } else{
+                            Toast.makeText(this@MainActivity,"Point of interest added to the map as marker", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                }
+
+
+            }
+        }
+        // The lambda function ends here
+    }
+
+    private fun insertDataToDatabase(name: String, type: String, description: String) {
+
+
+        val db = POIDatabase.getDatabase(application)
+
+        val newpoi = POIdata(0, name, type, description, currentLatitude, currentLongitude);
+
+        lifecycleScope.launch {
+            withContext(Dispatchers.IO) {
+                db.PointofintrestsDao().insert(newpoi)
+            }
+
+        }
 
     }
 
+    private fun loadDataFromDatabase() {
+
+        showPOI = true;
+
+        val db = POIDatabase.getDatabase(application)
+        lifecycleScope.launch {
+            withContext(Dispatchers.IO) {
+                val pointsofintrests = db.PointofintrestsDao().getAllpois()
+
+
+                val markerGestureListener = object:ItemizedIconOverlay.OnItemGestureListener<OverlayItem>
+                {
+                    override fun onItemLongPress(i: Int, item:OverlayItem ) : Boolean
+                    {
+                        Handler(Looper.getMainLooper()).post {
+
+                            android.app.AlertDialog.Builder(this@MainActivity)
+                                .setPositiveButton("OK", null) // add an OK button with an optional event handler
+                                .setMessage(item.snippet) // set the message
+                                .show() // show the dialog
+                        }
+
+                        return true
+                    }
+
+                    override fun onItemSingleTapUp(i: Int, item:OverlayItem): Boolean
+                    {
+                        Toast.makeText(this@MainActivity, item.snippet, Toast.LENGTH_SHORT).show()
+                        return true
+                    }
+                }
+
+
+                val items = ItemizedIconOverlay(this@MainActivity, arrayListOf<OverlayItem>(), markerGestureListener)
+                pointsofintrests.forEach {
+
+                    val new_item = OverlayItem(it.name, it.name + " Type: " + it.type + " Description: " + it.description, GeoPoint(it.lat, it.lon))
+                    items.addItem(new_item)
+                    map1.overlays.add(items)
+
+                }
+            }
+        }
+    }
 
     fun requestPermissions() {
         if (ContextCompat.checkSelfPermission(
@@ -133,6 +244,19 @@ class MainActivity : AppCompatActivity(), LocationListener {
     }
 
     override fun onLocationChanged(loc: Location) {
+        currentLatitude = loc.latitude;
+        currentLongitude = loc.longitude;
+
+
+
+        val user = OverlayItem("Me", "You are currently here", GeoPoint(loc.latitude, loc.longitude))
+        user.setMarker(ContextCompat.getDrawable(this, R.drawable.rsmall))
+        val items = ItemizedIconOverlay(this, arrayListOf<OverlayItem>(), null)
+
+        items.addItem(user)
+        map1.overlays.add(items)
+
+
         map1.controller.setCenter(GeoPoint(loc.latitude, loc.longitude))
     }
 

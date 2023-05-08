@@ -30,6 +30,8 @@
         </activity>
         <activity android:name=".MapChooseActivity" android:label="@string/saveSQL">
         </activity>
+        <activity android:name=".AddNewPOIActivity" android:label="@string/saveSQL">
+        </activity>
     </application>
 
 </manifest>

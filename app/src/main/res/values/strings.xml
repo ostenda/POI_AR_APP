@@ -6,5 +6,6 @@
     <string name="name">Name</string>
     <string name="type">Type</string>
     <string name="description">Description</string>
-    <string name="save_poi">Save Point of Interest!</string>
+    <string name="save_poi">Show saved Point of Interest!</string>
+    <string name="create_poi"> Create Point of Interest!</string>
 </resources>
