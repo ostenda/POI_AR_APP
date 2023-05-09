@@ -31,6 +31,7 @@ import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.ItemizedIconOverlay
 import org.osmdroid.views.overlay.OverlayItem
 import com.github.kittinunf.fuel.httpGet
+import com.github.kittinunf.fuel.httpPost
 // import com.github.kittinunf.fuel.json.responseJson // for JSON - uncomment when needed
 // import com.github.kittinunf.fuel.gson.responseObject // for GSON - uncomment when needed
 import com.github.kittinunf.fuel.json.responseJson
@@ -62,29 +63,8 @@ class MainActivity : AppCompatActivity(), LocationListener {
 
         requestPermissions()
 
-        val markerGestureListener = object:ItemizedIconOverlay.OnItemGestureListener<OverlayItem>
-        {
-            override fun onItemLongPress(i: Int, item:OverlayItem ) : Boolean
-            {
-                Toast.makeText(this@MainActivity, item.snippet, Toast.LENGTH_SHORT).show()
-                return true
-            }
 
-            override fun onItemSingleTapUp(i: Int, item:OverlayItem): Boolean
-            {
-                Toast.makeText(this@MainActivity, item.snippet, Toast.LENGTH_SHORT).show()
-                return true
-            }
-        }
-        val items = ItemizedIconOverlay(this, arrayListOf<OverlayItem>(), markerGestureListener)
-        val fernhurst = OverlayItem("Fernhurst", "Village in West Sussex", GeoPoint(51.05, -0.72))
-        val blackdown = OverlayItem("Blackdown", "highest point in West Sussex", GeoPoint(51.0581, -0.6897))
-        items.addItem(fernhurst)
-        items.addItem(blackdown)
-        map1.overlays.add(items)
     }
-
-
 
 
 
@@ -102,16 +82,9 @@ class MainActivity : AppCompatActivity(), LocationListener {
                 startActivity(intent)
                 return true
             }
-
-         /*   R.id.choosemap -> {
-                val intent = Intent(this,MapChooseActivity::class.java)
-                startActivity(intent)
-                return true
-            }
-*/
             R.id.create_poi -> {
                 val intent = Intent(this,AddNewPOIActivity::class.java)
-                PoiLauncher.launch(intent)
+                poiLauncher.launch(intent)
                 return true
             }
             R.id.showsavedSQL -> {
@@ -126,53 +99,44 @@ class MainActivity : AppCompatActivity(), LocationListener {
     }
 
 
-    val PoiLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-        // The lambda function starts here
+    val poiLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         // Check that we get an OK (success) result from the second activity
-        if (it.resultCode == RESULT_OK) {
-            it.data?.apply {
-                val new_poi_name = this.getStringExtra("com.app.new-poi_name")
-                val new_type = this.getStringExtra("com.app.new-poi_type")
-                val new_description = this.getStringExtra("com.app.new-poi_description")
+        if (result.resultCode == RESULT_OK) {
+            result.data?.let { data ->
+                val newPoiName = data.getStringExtra("com.app.new-poi_name")
+                val newType = data.getStringExtra("com.app.new-poi_type")
+                val newDescription = data.getStringExtra("com.app.new-poi_description")
 
-
-
-                val user = OverlayItem(new_poi_name, "You are currently here", GeoPoint(currentLatitude, currentLongitude))
+                val user = OverlayItem(newPoiName, "You are here", GeoPoint(currentLatitude, currentLongitude))
                 val items = ItemizedIconOverlay(this@MainActivity, arrayListOf<OverlayItem>(), null)
                 items.addItem(user)
                 map1.overlays.add(items)
 
+                if (newPoiName != null && newType != null) {
+                    if (newDescription != null) {
+                        insertDataToDatabase(newPoiName, newType, newDescription)
 
-                if (new_poi_name != null) {
-                    if(new_type != null){
-                        if(new_description !=null){
-                            insertDataToDatabase(new_poi_name,new_type,new_description)
-
-                            if(autoupload) {
-                                insertWebData(new_poi_name,new_type,new_description)
-                            }
-                        } else{
-                            Toast.makeText(this@MainActivity,"Point of interest added to the map as marker", Toast.LENGTH_SHORT).show()
+                        if (autoupload) {
+                            insertWebData(newPoiName, newType, newDescription)
                         }
+                    } else {
+                        Toast.makeText(this@MainActivity, "Point of interest added to the map as marker", Toast.LENGTH_SHORT).show()
                     }
                 }
-
-
             }
         }
-        // The lambda function ends here
     }
 
-    fun insertWebData(new_poi_name: String, new_type: String, new_description: String) {
 
-    }
 
     private fun loadWebData(){
         shopWebPoi = true;
 
         Toast.makeText(this@MainActivity, "Bringing data from web server", Toast.LENGTH_SHORT).show()
 
-        var url = "http://10.0.2.2:3000/poi/all"
+        val baseUrl = "http://10.0.2.2:3000"
+        val url = "$baseUrl/poi/all"
+
         url.httpGet().responseJson { request, response, result ->
             when(result) {
                 is Result.Success -> {
@@ -188,6 +152,7 @@ class MainActivity : AppCompatActivity(), LocationListener {
                                 android.app.AlertDialog.Builder(this@MainActivity)
                                     .setPositiveButton("OK", null) // add an OK button with an optional event handler
                                     .setMessage(item.snippet) // set the message
+                                    .create()
                                     .show() // show the dialog
                             }
                             return true
@@ -238,6 +203,26 @@ class MainActivity : AppCompatActivity(), LocationListener {
 
     }
 
+    private fun insertWebData(name: String, type: String, description: String) {
+
+        val baseUrl = "http://10.0.2.2:3000"
+        val url = "$baseUrl/poi/create"
+
+        val postData = listOf("name" to name, "type" to type, "description" to description, "lat" to currentLatitude.toDouble(), "lon" to currentLongitude.toDouble())
+        url.httpPost(postData).response { request, response, result ->
+            when (result) {
+                is Result.Success -> {
+                    Toast.makeText(this@MainActivity, result.get().decodeToString(), Toast.LENGTH_LONG).show()
+                }
+
+                is Result.Failure -> {
+                    Toast.makeText(this@MainActivity, result.error.message, Toast.LENGTH_LONG).show()
+                }
+            }
+        }
+
+    }
+
     private fun loadDataFromDatabase() {
 
         showPOI = true;
@@ -257,6 +242,7 @@ class MainActivity : AppCompatActivity(), LocationListener {
                             android.app.AlertDialog.Builder(this@MainActivity)
                                 .setPositiveButton("OK", null) // add an OK button with an optional event handler
                                 .setMessage(item.snippet) // set the message
+                                .create()
                                 .show() // show the dialog
                         }
 
@@ -342,7 +328,7 @@ class MainActivity : AppCompatActivity(), LocationListener {
         map1.controller.setCenter(GeoPoint(loc.latitude, loc.longitude))
     }
 
-
+    //onResume saves autoupload preference
     override fun onResume() {
         super.onResume()
         val prefs = androidx.preference.PreferenceManager.getDefaultSharedPreferences(this@MainActivity)
