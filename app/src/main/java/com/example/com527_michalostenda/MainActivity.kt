@@ -39,6 +39,7 @@ import com.github.kittinunf.result.Result
 
 class MainActivity : AppCompatActivity(), LocationListener {
 
+
     lateinit var map1: MapView
 
     var showPOI = false
@@ -49,9 +50,6 @@ class MainActivity : AppCompatActivity(), LocationListener {
     var currentLatitude = 0.0;
     var currentLongitude = 0.0;
 
-    var names: MutableList<String> = mutableListOf<String>()
-    var types: MutableList<String> = mutableListOf<String>()
-    var descriptions: MutableList<String> = mutableListOf<String>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -101,19 +99,24 @@ class MainActivity : AppCompatActivity(), LocationListener {
         }
         return false
     }
-/*
-    private fun savePointsOfInterestToDatabase() {
-        var names: MutableList<String> = mutableListOf<String>()
-        var types: MutableList<String> = mutableListOf<String>()
-        var descriptions: MutableList<String> = mutableListOf<String>()
-        for (overlay in items) {
-            val name = overlay.title
-            val type = overlay.snippet.substringAfter("Type: ").substringBefore(" ")
-            val description = overlay.snippet.substringAfter("Description: ")
-            insertDataToDatabase(name, type, description)
+
+    private fun insertDataToDatabase(name: String, type: String, description: String) {
+
+
+        val db = POIDatabase.getDatabase(application)
+
+        val newpoi = POIdata(0, name, type, description, currentLatitude, currentLongitude);
+
+        lifecycleScope.launch {
+            withContext(Dispatchers.IO) {
+                db.PointofintrestsDao().insert(newpoi)
+            }
+
         }
+
     }
-*/
+
+
     val poiLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         // Check that we get an OK (success) result from the second activity
         if (result.resultCode == RESULT_OK) {
@@ -200,21 +203,7 @@ class MainActivity : AppCompatActivity(), LocationListener {
         }
     }
 
-    private fun insertDataToDatabase(name: String, type: String, description: String) {
 
-
-        val db = POIDatabase.getDatabase(application)
-
-        val newpoi = POIdata(0, name, type, description, currentLatitude, currentLongitude);
-
-        lifecycleScope.launch {
-            withContext(Dispatchers.IO) {
-                db.PointofintrestsDao().insert(newpoi)
-            }
-
-        }
-
-    }
 
     private fun insertWebData(name: String, type: String, description: String) {
 
