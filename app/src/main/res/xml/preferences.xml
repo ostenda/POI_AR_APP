@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 <CheckBoxPreference android:key="autoupload" android:defaultValue="false" android:title="Auto-upload"
-    android:summary="Auto-upload point of interests to the web?" />
+    android:summary="Auto-upload point of interests to the web" />
 </PreferenceScreen>

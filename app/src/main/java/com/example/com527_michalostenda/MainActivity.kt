@@ -77,7 +77,6 @@ class MainActivity : AppCompatActivity(), LocationListener {
 
         return true
     }
-
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when(item.itemId) {
             R.id.preferences -> {
@@ -97,13 +96,12 @@ class MainActivity : AppCompatActivity(), LocationListener {
                 loadWebData()
             }
             R.id.saveSQL -> {
-                savePointsOfInterestToDatabase()
-                true
+
             }
         }
         return false
     }
-
+/*
     private fun savePointsOfInterestToDatabase() {
         var names: MutableList<String> = mutableListOf<String>()
         var types: MutableList<String> = mutableListOf<String>()
@@ -115,7 +113,7 @@ class MainActivity : AppCompatActivity(), LocationListener {
             insertDataToDatabase(name, type, description)
         }
     }
-
+*/
     val poiLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         // Check that we get an OK (success) result from the second activity
         if (result.resultCode == RESULT_OK) {
@@ -165,10 +163,10 @@ class MainActivity : AppCompatActivity(), LocationListener {
                             Handler(Looper.getMainLooper()).post {
 
                                 android.app.AlertDialog.Builder(this@MainActivity)
-                                   .setPositiveButton("OK", null) // add an OK button with an optional event handler
-                                    .setMessage(item.snippet) // set the message
+                                   .setPositiveButton("OK", null)
+                                    .setMessage(item.snippet)
                                     .create()
-                                    .show() // show the dialog
+                                    .show()
                             }
                             return true
                         }
@@ -194,9 +192,9 @@ class MainActivity : AppCompatActivity(), LocationListener {
                 }
                 is Result.Failure -> {
                     android.app.AlertDialog.Builder(this@MainActivity)
-                        .setPositiveButton("OK", null) // add an OK button with an optional event handler
-                        .setMessage("ERROR ${result.error.message}") // set the message
-                        .show() // show the dialog
+                        .setPositiveButton("OK", null)
+                        .setMessage("ERROR ${result.error.message}")
+                        .show()
                 }
             }
         }
@@ -255,10 +253,10 @@ class MainActivity : AppCompatActivity(), LocationListener {
                         Handler(Looper.getMainLooper()).post {
 
                             android.app.AlertDialog.Builder(this@MainActivity)
-                                .setPositiveButton("OK", null) // add an OK button with an optional event handler
-                                .setMessage(item.snippet) // set the message
+                                .setPositiveButton("OK", null) //
+                                .setMessage(item.snippet) //
                                 .create()
-                                .show() // show the dialog
+                                .show() //
                         }
 
                         return true
