@@ -49,6 +49,9 @@ class MainActivity : AppCompatActivity(), LocationListener {
     var currentLatitude = 0.0;
     var currentLongitude = 0.0;
 
+    var names: MutableList<String> = mutableListOf<String>()
+    var types: MutableList<String> = mutableListOf<String>()
+    var descriptions: MutableList<String> = mutableListOf<String>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -93,11 +96,25 @@ class MainActivity : AppCompatActivity(), LocationListener {
             R.id.showdataweb -> {
                 loadWebData()
             }
-
+            R.id.saveSQL -> {
+                savePointsOfInterestToDatabase()
+                true
+            }
         }
         return false
     }
 
+    private fun savePointsOfInterestToDatabase() {
+        var names: MutableList<String> = mutableListOf<String>()
+        var types: MutableList<String> = mutableListOf<String>()
+        var descriptions: MutableList<String> = mutableListOf<String>()
+        for (overlay in items) {
+            val name = overlay.title
+            val type = overlay.snippet.substringAfter("Type: ").substringBefore(" ")
+            val description = overlay.snippet.substringAfter("Description: ")
+            insertDataToDatabase(name, type, description)
+        }
+    }
 
     val poiLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         // Check that we get an OK (success) result from the second activity
@@ -112,18 +129,16 @@ class MainActivity : AppCompatActivity(), LocationListener {
                 items.addItem(user)
                 map1.overlays.add(items)
 
-                if (newPoiName != null && newType != null) {
-                    if (newDescription != null) {
-                        insertDataToDatabase(newPoiName, newType, newDescription)
-
-                        if (autoupload) {
+                if (newPoiName != null && newType != null && newDescription != null) {
+                    insertDataToDatabase(newPoiName, newType, newDescription)
+                    if (autoupload) {
                             insertWebData(newPoiName, newType, newDescription)
                         }
                     } else {
                         Toast.makeText(this@MainActivity, "Point of interest added to the map as marker", Toast.LENGTH_SHORT).show()
                     }
                 }
-            }
+
         }
     }
 
@@ -150,7 +165,7 @@ class MainActivity : AppCompatActivity(), LocationListener {
                             Handler(Looper.getMainLooper()).post {
 
                                 android.app.AlertDialog.Builder(this@MainActivity)
-                                    .setPositiveButton("OK", null) // add an OK button with an optional event handler
+                                   .setPositiveButton("OK", null) // add an OK button with an optional event handler
                                     .setMessage(item.snippet) // set the message
                                     .create()
                                     .show() // show the dialog

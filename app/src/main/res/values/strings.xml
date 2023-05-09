@@ -1,13 +1,12 @@
 <resources>
     <string name="app_name">Michal Ostenda</string>
-    <string name="test"> test</string>
-    <string name="saveSQL"> Save all POI</string>
+    <string name="save_poi"> Save POI</string>
     <string name="showdataweb">Load data from web server</string>
 
     <string name="name">Name</string>
     <string name="type">Type</string>
     <string name="description">Description</string>
-    <string name="save_poi">Load data from local database!</string>
+    <string name="saveSQL">Load data from local database!</string>
     <string name="create_poi"> Create Point of Interest!</string>
     <string name="preferences"> Preferences</string>
 </resources>
