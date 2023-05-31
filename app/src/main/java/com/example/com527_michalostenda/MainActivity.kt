@@ -32,8 +32,8 @@ import org.osmdroid.views.overlay.ItemizedIconOverlay
 import org.osmdroid.views.overlay.OverlayItem
 import com.github.kittinunf.fuel.httpGet
 import com.github.kittinunf.fuel.httpPost
-// import com.github.kittinunf.fuel.json.responseJson // for JSON - uncomment when needed
-// import com.github.kittinunf.fuel.gson.responseObject // for GSON - uncomment when needed
+import com.github.kittinunf.fuel.json.responseJson // for JSON - uncomment when needed
+import com.github.kittinunf.fuel.gson.responseObject // for GSON - uncomment when needed
 import com.github.kittinunf.fuel.json.responseJson
 import com.github.kittinunf.result.Result
 
